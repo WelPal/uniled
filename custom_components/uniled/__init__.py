@@ -51,7 +51,7 @@ from .const import (
     UNILED_DISCOVERY_INTERVAL,
     UNILED_DISCOVERY_SCAN_TIMEOUT,
     UNILED_DISCOVERY_SIGNAL,
-    UNILED_DISCOVERY_STARTUP_TIMEOUT,
+    #    UNILED_DISCOVERY_STARTUP_TIMEOUT,
     UNILED_OPTIONS_ATTRIBUTES,
 )
 from .coordinator import UniledUpdateCoordinator
@@ -462,8 +462,9 @@ async def async_unload_entry(hass: HomeAssistant, entry) -> bool:
                 bluetooth.async_rediscover_address(hass, coordinator.device.address)
             elif coordinator.device.transport == UNILED_TRANSPORT_NET:
                 # Make sure we probe the device again in case something has changed externally
-                host = entry.data[CONF_HOST]
-                async_clear_discovery_cache(hass, host)
+                # host = entry.data[CONF_HOST]
+                # async_clear_discovery_cache(hass, host)
+                pass
             del coordinator
         gc.collect()
 

@@ -19,7 +19,6 @@ from homeassistant.components.bluetooth import (
 from homeassistant.const import (
     CONF_ADDRESS,
     CONF_COUNTRY,
-    CONF_HOST,
     CONF_MODEL,
     CONF_PASSWORD,
     CONF_USERNAME,
@@ -55,6 +54,7 @@ from .const import (
     UNILED_COMMAND_SETTLE_DELAY,
     UNILED_DEF_DEVICE_RETRYS as DEFAULT_RETRY_COUNT,
     UNILED_DEF_UPDATE_INTERVAL as DEFAULT_UPDATE_INTERVAL,
+    UNILED_DISCOVERY_SCAN_TIMEOUT,
     UNILED_DISCOVERY_SIGNAL,
     UNILED_MAX_DEVICE_RETRYS as MAX_DEVICE_RETRYS,
     UNILED_MAX_UPDATE_INTERVAL as MAX_UPDATE_INTERVAL,
@@ -65,6 +65,7 @@ from .const import (
 from .coordinator import UniledUpdateCoordinator
 from .discovery import (
     async_discover_device,
+    async_discover_devices,
     async_name_from_discovery,
     async_populate_data_from_discovery,
     async_update_entry_from_discovery,
@@ -529,7 +530,9 @@ class UniledConfigFlowHandler(UniledMeshHandler, flow.ConfigFlow, domain=DOMAIN)
         self._discovered_device = cast(UniledDiscovery, discovery_info)
         return await self._async_network_discovery()
 
-    async def _async_network_discovery(self) -> FlowResult:
+    async def _async_network_discovery(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
         """Handle network discovery."""
         assert self._discovered_device is not None
         device = self._discovered_device
@@ -597,6 +600,9 @@ class UniledConfigFlowHandler(UniledMeshHandler, flow.ConfigFlow, domain=DOMAIN)
         if self.hass.config_entries.flow.async_has_matching_flow(self):
             _LOGGER.debug("Flow running for host %s", self.host)
             return self.async_abort(reason="already_in_progress")
+
+        if user_input is not None:
+            return self._async_network_create_entry(self._discovered_device)
 
         _LOGGER.debug(
             "Discovered '%s' (mac=%s, local=%s, code=%s, model=%s)",
@@ -694,6 +700,10 @@ class UniledConfigFlowHandler(UniledMeshHandler, flow.ConfigFlow, domain=DOMAIN)
         if user_input is not None:
             address = user_input[CONF_ADDRESS]
 
+            if address in self._discovered_net_devices:
+                self._discovered_device = self._discovered_net_devices[address]
+                return await self._async_network_discovery(user_input)
+
             if address in self._discovered_zng_meshes:
                 await self.async_set_unique_id(address)
                 self._abort_if_unique_id_configured()
@@ -717,6 +727,16 @@ class UniledConfigFlowHandler(UniledMeshHandler, flow.ConfigFlow, domain=DOMAIN)
             self._discovered_ble_devices[discovery.address] = discovery
         else:
             current_addresses = self._async_current_ids()
+
+            for discovery in await async_discover_devices(
+                self.hass, UNILED_DISCOVERY_SCAN_TIMEOUT
+            ):
+                mac_address = discovery[ATTR_UL_MAC_ADDRESS]
+                mac = dr.format_mac(mac_address)
+                if mac_address in current_addresses or mac in current_addresses:
+                    continue
+                self._discovered_net_devices[mac_address] = discovery
+
             for discovery in async_discovered_service_info(self.hass):
                 mesh_uuid, mesh_unique = ZenggeManager.mesh_uuid_unique(
                     discovery.device, discovery.advertisement
@@ -728,7 +748,7 @@ class UniledConfigFlowHandler(UniledMeshHandler, flow.ConfigFlow, domain=DOMAIN)
                         discovery.address,
                         hex(mesh_uuid),
                     )
-                    if mesh_unique in self._async_current_ids():
+                    if mesh_unique in current_addresses:
                         continue
                     if mesh_unique not in self._discovered_zng_meshes:
                         self._discovered_zng_meshes[mesh_unique] = mesh_uuid
@@ -736,6 +756,7 @@ class UniledConfigFlowHandler(UniledMeshHandler, flow.ConfigFlow, domain=DOMAIN)
 
                 if (
                     discovery.address in current_addresses
+                    or discovery.address in self._discovered_net_devices
                     or discovery.address in self._discovered_ble_devices
                     or (
                         model := UniledBleDevice.match_known_device(
@@ -748,7 +769,11 @@ class UniledConfigFlowHandler(UniledMeshHandler, flow.ConfigFlow, domain=DOMAIN)
                 self._discovered_ble_devices[discovery.address] = discovery
                 _LOGGER.info("Discovered '%s' ble device", discovery.address)
 
-        if not self._discovered_ble_devices and not self._discovered_zng_meshes:
+        if (
+            not self._discovered_net_devices
+            and not self._discovered_ble_devices
+            and not self._discovered_zng_meshes
+        ):
             return self.async_abort(reason="no_devices_found")
 
         return self.async_show_form(
@@ -765,8 +790,14 @@ class UniledConfigFlowHandler(UniledMeshHandler, flow.ConfigFlow, domain=DOMAIN)
                                         for mesh_unique, mesh_uuid in self._discovered_zng_meshes.items()
                                     },
                                     {
-                                        service_info.address: f"{service_info.name} ({service_info.address})"
-                                        for service_info in self._discovered_ble_devices.values()
+                                        device.address: f"{device.name} ({device.address})"
+                                        for device in self._discovered_ble_devices.values()
+                                    },
+                                    {
+                                        device[
+                                            ATTR_UL_MAC_ADDRESS
+                                        ]: f"{device[ATTR_UL_LOCAL_NAME]} ({device[ATTR_UL_MAC_ADDRESS]} @ {device[ATTR_UL_IP_ADDRESS]})"
+                                        for device in self._discovered_net_devices.values()
                                     },
                                 ],
                             )
