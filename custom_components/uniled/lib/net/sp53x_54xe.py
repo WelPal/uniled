@@ -153,9 +153,17 @@ class SP5XXE(UniledProxy):
         code = {0x56: "SP538E", 0x63: "SP548E"}
         conf = {0x06: SP5XXE_86()}
 
+    class SP539E_SP549E(SPTechSig):
+        """SP539E & SP549E."""
+
+        info = "SPI RGBW (Music) Controller"
+        code = {0x57: "SP539E", 0x64: "SP549E"}
+        conf = {0x08: SP5XXE_88()}
+
     MODEL_SIGNATURE_LIST: Final = [
         SP530E,
         SP538E_SP548E,
+        SP539E_SP549E,
     ]
 
     def _make_model(self, model: SPTechSig, code: int) -> SPTechNetModel:
