@@ -1,16 +1,16 @@
-"""UniLED SPTech Common Components"""
+"""UniLED SPTech Common Components."""
+
 from __future__ import annotations
+
 from dataclasses import dataclass
 from typing import Final
 
-from .effects import (
-    UNILEDEffectType,
-    UNILEDEffects,
-)
+from .effects import UNILEDEffects, UNILEDEffectType
+
 
 @dataclass(frozen=True)
 class _FX_STATIC:
-    """Static Effect and Attributes"""
+    """Static Effect and Attributes."""
 
     name: str
     colorable: bool = True
@@ -22,7 +22,7 @@ class _FX_STATIC:
 
 @dataclass(frozen=True)
 class _FX_DYNAMIC:
-    """Dynamic Effect and Attributes"""
+    """Dynamic Effect and Attributes."""
 
     name: str
     colorable: bool = False
@@ -34,7 +34,7 @@ class _FX_DYNAMIC:
 
 @dataclass(frozen=True)
 class _FX_SOUND:
-    """Sound Effect and Attributes"""
+    """Sound Effect and Attributes."""
 
     name: str
     colorable: bool = False
@@ -43,11 +43,12 @@ class _FX_SOUND:
     pausable: bool = False
     speedable: bool = False
 
+
 ##
 ## BanlanX - SPTech Common Effects
 ##
 class SPTechFX:
-    """BanlanX - SPTech Common Effects"""
+    """BanlanX - SPTech Common Effects."""
 
     MODE_STATIC_COLOR: Final = 0x01
     MODE_STATIC_WHITE: Final = 0x02
@@ -66,7 +67,7 @@ class SPTechFX:
         MODE_SOUND_COLOR: "Sound - Color",
         MODE_SOUND_WHITE: "Sound - White",
         MODE_CUSTOM_SOLID: "Custom Solid",
-        MODE_CUSTOM_GRADIENT: "Custom Gradient"
+        MODE_CUSTOM_GRADIENT: "Custom Gradient",
     }
 
     LISTOF_DYNAMIC_MODES: Final = [
@@ -105,10 +106,7 @@ class SPTechFX:
         MODE_SOUND_WHITE,
     ]
 
-    LISTOF_CUSTOM_MODES: Final = [
-        MODE_CUSTOM_SOLID,
-        MODE_CUSTOM_GRADIENT
-    ]
+    LISTOF_CUSTOM_MODES: Final = [MODE_CUSTOM_SOLID, MODE_CUSTOM_GRADIENT]
 
     DICTOF_EFFECTS_STATIC_COLOR: Final = {
         0x01: _FX_STATIC(UNILEDEffects.SOLID),
@@ -191,34 +189,66 @@ class SPTechFX:
         0x1A: _FX_DYNAMIC(UNILEDEffects.METEOR_CYAN, False, True, True),
         0x1B: _FX_DYNAMIC(UNILEDEffects.METEOR_PURPLE, False, True, True),
         0x1C: _FX_DYNAMIC(UNILEDEffects.METEOR_WHITE, False, True, True),
-        0x1D: _FX_DYNAMIC(UNILEDEffects.GRADUAL_SNAKE_RED_GREEN, False, True, True, True),
-        0x1E: _FX_DYNAMIC(UNILEDEffects.GRADUAL_SNAKE_RED_BLUE, False, True, True, True),
-        0x1F: _FX_DYNAMIC(UNILEDEffects.GRADUAL_SNAKE_RED_YELLOW, False, True, True, True),
-        0x20: _FX_DYNAMIC(UNILEDEffects.GRADUAL_SNAKE_RED_CYAN, False, True, True, True),
-        0x21: _FX_DYNAMIC(UNILEDEffects.GRADUAL_SNAKE_RED_PURPLE, False, True, True, True),
-        0x22: _FX_DYNAMIC(UNILEDEffects.GRADUAL_SNAKE_RED_WHITE, False, True, True, True),
-        0x23: _FX_DYNAMIC(UNILEDEffects.GRADUAL_SNAKE_GREEN_BLUE, False, True, True, True),
+        0x1D: _FX_DYNAMIC(
+            UNILEDEffects.GRADUAL_SNAKE_RED_GREEN, False, True, True, True
+        ),
+        0x1E: _FX_DYNAMIC(
+            UNILEDEffects.GRADUAL_SNAKE_RED_BLUE, False, True, True, True
+        ),
+        0x1F: _FX_DYNAMIC(
+            UNILEDEffects.GRADUAL_SNAKE_RED_YELLOW, False, True, True, True
+        ),
+        0x20: _FX_DYNAMIC(
+            UNILEDEffects.GRADUAL_SNAKE_RED_CYAN, False, True, True, True
+        ),
+        0x21: _FX_DYNAMIC(
+            UNILEDEffects.GRADUAL_SNAKE_RED_PURPLE, False, True, True, True
+        ),
+        0x22: _FX_DYNAMIC(
+            UNILEDEffects.GRADUAL_SNAKE_RED_WHITE, False, True, True, True
+        ),
+        0x23: _FX_DYNAMIC(
+            UNILEDEffects.GRADUAL_SNAKE_GREEN_BLUE, False, True, True, True
+        ),
         0x24: _FX_DYNAMIC(
             UNILEDEffects.GRADUAL_SNAKE_GREEN_YELLOW, False, True, True, True
         ),
-        0x25: _FX_DYNAMIC(UNILEDEffects.GRADUAL_SNAKE_GREEN_CYAN, False, True, True, True),
+        0x25: _FX_DYNAMIC(
+            UNILEDEffects.GRADUAL_SNAKE_GREEN_CYAN, False, True, True, True
+        ),
         0x26: _FX_DYNAMIC(
             UNILEDEffects.GRADUAL_SNAKE_GREEN_PURPLE, False, True, True, True
         ),
-        0x27: _FX_DYNAMIC(UNILEDEffects.GRADUAL_SNAKE_GREEN_WHITE, False, True, True, True),
-        0x28: _FX_DYNAMIC(UNILEDEffects.GRADUAL_SNAKE_BLUE_YELLOW, False, True, True, True),
-        0x29: _FX_DYNAMIC(UNILEDEffects.GRADUAL_SNAKE_BLUE_CYAN, False, True, True, True),
-        0x2A: _FX_DYNAMIC(UNILEDEffects.GRADUAL_SNAKE_BLUE_PURPLE, False, True, True, True),
-        0x2B: _FX_DYNAMIC(UNILEDEffects.GRADUAL_SNAKE_BLUE_WHITE, False, True, True, True),
-        0x2C: _FX_DYNAMIC(UNILEDEffects.GRADUAL_SNAKE_YELLOW_CYAN, False, True, True, True),
+        0x27: _FX_DYNAMIC(
+            UNILEDEffects.GRADUAL_SNAKE_GREEN_WHITE, False, True, True, True
+        ),
+        0x28: _FX_DYNAMIC(
+            UNILEDEffects.GRADUAL_SNAKE_BLUE_YELLOW, False, True, True, True
+        ),
+        0x29: _FX_DYNAMIC(
+            UNILEDEffects.GRADUAL_SNAKE_BLUE_CYAN, False, True, True, True
+        ),
+        0x2A: _FX_DYNAMIC(
+            UNILEDEffects.GRADUAL_SNAKE_BLUE_PURPLE, False, True, True, True
+        ),
+        0x2B: _FX_DYNAMIC(
+            UNILEDEffects.GRADUAL_SNAKE_BLUE_WHITE, False, True, True, True
+        ),
+        0x2C: _FX_DYNAMIC(
+            UNILEDEffects.GRADUAL_SNAKE_YELLOW_CYAN, False, True, True, True
+        ),
         0x2D: _FX_DYNAMIC(
             UNILEDEffects.GRADUAL_SNAKE_YELLOW_PURPLE, False, True, True, True
         ),
         0x2E: _FX_DYNAMIC(
             UNILEDEffects.GRADUAL_SNAKE_YELLOW_WHITE, False, True, True, True
         ),
-        0x2F: _FX_DYNAMIC(UNILEDEffects.GRADUAL_SNAKE_CYAN_PURPLE, False, True, True, True),
-        0x30: _FX_DYNAMIC(UNILEDEffects.GRADUAL_SNAKE_CYAN_WHITE, False, True, True, True),
+        0x2F: _FX_DYNAMIC(
+            UNILEDEffects.GRADUAL_SNAKE_CYAN_PURPLE, False, True, True, True
+        ),
+        0x30: _FX_DYNAMIC(
+            UNILEDEffects.GRADUAL_SNAKE_CYAN_WHITE, False, True, True, True
+        ),
         0x31: _FX_DYNAMIC(
             UNILEDEffects.GRADUAL_SNAKE_PURPLE_WHITE, False, True, True, True
         ),
@@ -292,7 +322,9 @@ class SPTechFX:
         0x75: _FX_DYNAMIC(UNILEDEffects.STACK_CYAN_PURPLE, False, True, True, True),
         0x76: _FX_DYNAMIC(UNILEDEffects.STACK_PURPLE_WHITE, False, True, True, True),
         0x77: _FX_DYNAMIC(UNILEDEffects.SNAKE_RED_BLUE_WHITE, False, True, True, True),
-        0x78: _FX_DYNAMIC(UNILEDEffects.SNAKE_GREEN_YELLOW_WHITE, False, True, True, True),
+        0x78: _FX_DYNAMIC(
+            UNILEDEffects.SNAKE_GREEN_YELLOW_WHITE, False, True, True, True
+        ),
         0x79: _FX_DYNAMIC(UNILEDEffects.SNAKE_RED_GREEN_WHITE, False, True, True, True),
         0x7A: _FX_DYNAMIC(UNILEDEffects.SNAKE_RED_YELLOW, False, True, True, True),
         0x7B: _FX_DYNAMIC(UNILEDEffects.SNAKE_RED_WHITE, False, True, True, True),
