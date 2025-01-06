@@ -163,7 +163,7 @@ class SP6XXE(UniledProxy):
 
     class SP638E_SP648E(SPTechSig):
         info = "SPI RGB (Music) Controller"
-        code = {0x27: "SP638E", 0x33: "SP648E", 0x45: "SP648E", 0x4C: "SP648E"}
+        code = {0x27: "SP638E", 0x33: "SP648E", 0x45: "SP648E", 0x4C: "SP648E", 0x68: "SP648E"}
         conf = {0x06: SP6XXE_86()}
 
     class SP639E_SP649E(SPTechSig):
