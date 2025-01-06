@@ -646,6 +646,7 @@ class UniledConfigFlowHandler(UniledMeshHandler, flow.ConfigFlow, domain=DOMAIN)
     def _async_network_create_entry(self, device: UniledDiscovery):
         """Create network entry."""
         if device[ATTR_UL_MODEL_NAME] is None:
+            _LOGGER.warning("Device not supported: %s", device)
             raise AbortFlow("not_supported")
         data: dict[str, Any] = {}
         async_populate_data_from_discovery(data, data, device)
