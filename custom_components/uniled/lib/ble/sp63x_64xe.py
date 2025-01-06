@@ -1,13 +1,17 @@
 """UniLED NET Devices - SP LED (BanlanX SP630E)"""
 
 from __future__ import annotations
+
+import logging
 from typing import Final
 
 from ..discovery import UniledProxy
-from ..sptech_model import SPTechModel
 from ..sptech_conf import (
-    SPTechSig,
-    SPTechConf,
+    CFG_8A as SP6XXE_8A,
+    CFG_8B as SP6XXE_8B,
+    CFG_8C as SP6XXE_8C,
+    CFG_8D as SP6XXE_8D,
+    CFG_8E as SP6XXE_8E,
     CFG_81 as SP6XXE_81,
     CFG_82 as SP6XXE_82,
     CFG_83 as SP6XXE_83,
@@ -17,21 +21,18 @@ from ..sptech_conf import (
     CFG_87 as SP6XXE_87,
     CFG_88 as SP6XXE_88,
     CFG_89 as SP6XXE_89,
-    CFG_8A as SP6XXE_8A,
-    CFG_8B as SP6XXE_8B,
-    CFG_8C as SP6XXE_8C,
-    CFG_8D as SP6XXE_8D,
-    CFG_8E as SP6XXE_8E,
+    SPTechConf,
+    SPTechSig,
 )
+from ..sptech_model import SPTechModel
 from .device import (
     UUID_BASE_FORMAT as UUID_FORMAT,
+    AdvertisementData,
+    BLEDevice,
     ParseNotificationError,
     UniledBleDevice,
     UniledBleModel,
-    BLEDevice,
-    AdvertisementData,
 )
-import logging
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -40,7 +41,7 @@ _LOGGER = logging.getLogger(__name__)
 ## BanlanX - SP63xE and SP64xE BLE Protocol Implementation
 ##
 class SPTechBleModel(SPTechModel, UniledBleModel):
-    """BanlanX - SP56xE/SP64xE BLE Protocol Implementation"""
+    """BanlanX - SP56xE/SP64xE BLE Protocol Implementation."""
 
     MANUFACTURER_ID: Final = 20563
     UUID_SERVICE: Final = [UUID_FORMAT.format(part) for part in ["e0ff", "ffe0"]]
@@ -52,7 +53,7 @@ class SPTechBleModel(SPTechModel, UniledBleModel):
         name: str,
         info: str,
         configs: dict[int, SPTechConf],
-    ):
+    ) -> None:
         self.configs = configs
         super().__init__(
             model_code=code,
@@ -74,7 +75,7 @@ class SPTechBleModel(SPTechModel, UniledBleModel):
         sender: int,
         data: bytearray,
     ) -> bool:
-        """Parse notification message(s)"""
+        """Parse notification message(s)."""
         _HEADER_LENGTH = 6
         _HEADER_BYTE = 0x53
         _MESSAGE_TYPE = 1
@@ -92,7 +93,7 @@ class SPTechBleModel(SPTechModel, UniledBleModel):
             raise ParseNotificationError(
                 f"Packet payload size mismatch: {packet_length} vs {expected_length}"
             )
-        if message_key := data[_MESSAGE_KEY]:
+        if message_key := data[_MESSAGE_KEY]:  # noqa: F841
             raise ParseNotificationError("Encoded packet - currently unsupported")
         return self.decode_response_payload(
             device, (), data[:_HEADER_LENGTH], data[_HEADER_LENGTH:]
@@ -103,7 +104,7 @@ class SPTechBleModel(SPTechModel, UniledBleModel):
 ## BanlanX - SP6xxE Device Proxy
 ##
 class SP6XXE(UniledProxy):
-    """BanlanX - SP6xxE Device Proxy"""
+    """BanlanX - SP6xxE Device Proxy."""
 
     class SP630E(SPTechSig):
         info = "RGB(CW) SPI/PWM (Music) Controller"

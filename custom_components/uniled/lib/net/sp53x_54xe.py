@@ -1,18 +1,19 @@
 """UniLED NET Devices - SP LED (BanlanX SP530E)"""
 
 from __future__ import annotations
-from typing import Final
+
 from itertools import chain
-from .model import UniledNetModel
-from .device import UniledNetDevice
+import logging
+from typing import Final
+
 from ..discovery import UniledProxy
 from ..effects import UNILEDEffects
-from ..sptech_model import SPTechModel
-from ..sptech_effects import _FX_STATIC, _FX_DYNAMIC, _FX_SOUND, SPTechFX
 from ..sptech_conf import (
-    SPTechChips,
-    SPTechSig,
-    SPTechConf,
+    CFG_8A as SP5XXE_8A,
+    CFG_8B as SP5XXE_8B,
+    CFG_8C as SP5XXE_8C,
+    CFG_8D as SP5XXE_8D,
+    CFG_8E as SP5XXE_8E,
     CFG_81 as SP5XXE_81,
     CFG_82 as SP5XXE_82,
     CFG_83 as SP5XXE_83,
@@ -20,16 +21,16 @@ from ..sptech_conf import (
     CFG_85 as SP5XXE_85,
     # CFG_86 as SP5XXE_86,
     CFG_87 as SP5XXE_87,
-    CFG_88 as SP5XXE_88,
+    # CFG_88 as SP5XXE_88,
     CFG_89 as SP5XXE_89,
-    CFG_8A as SP5XXE_8A,
-    CFG_8B as SP5XXE_8B,
-    CFG_8C as SP5XXE_8C,
-    CFG_8D as SP5XXE_8D,
-    CFG_8E as SP5XXE_8E,
+    SPTechChips,
+    SPTechConf,
+    SPTechSig,
 )
-
-import logging
+from ..sptech_effects import _FX_DYNAMIC, _FX_SOUND, _FX_STATIC, SPTechFX
+from ..sptech_model import SPTechModel
+from .device import UniledNetDevice
+from .model import UniledNetModel
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -38,7 +39,7 @@ _LOGGER = logging.getLogger(__name__)
 ## BanlanX - SP53xE and SP54xE Network Protocol Implementation
 ##
 class SPTechNetModel(SPTechModel, UniledNetModel):
-    """BanlanX - SP53xE/SP54xE Network Protocol Implementation"""
+    """BanlanX - SP53xE/SP54xE Network Protocol Implementation."""
 
     DICTOF_SPI_EFFECTS_SOUND_COLOR: Final = {
         0x01: _FX_SOUND("Sound - Music Mode 1"),
@@ -64,7 +65,7 @@ class SPTechNetModel(SPTechModel, UniledNetModel):
         name: str,
         info: str,
         configs: dict[int, SPTechConf],
-    ):
+    ) -> None:
         self.configs = configs
         super().__init__(
             model_code=code,
@@ -78,10 +79,10 @@ class SPTechNetModel(SPTechModel, UniledNetModel):
 
 
 ##
-## SP530E Specific Configuration(s)
+## SP5xxE Configuration(s)
 ##
 class SP5XXE_86(SPTechConf):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.name = "SPI - RGB"
         self.spi = True
@@ -96,13 +97,36 @@ class SP5XXE_86(SPTechConf):
         }
 
 
+class SP5XXE_88(SPTechConf):
+    def __init__(self) -> None:
+        super().__init__()
+        self.name = "SPI - RGBW"
+        self.spi = True
+        self.hue = True
+        self.white = True
+        self.coexistence = True
+        self.order = SPTechChips.CHIP_ORDER_RGBW
+        self.effects = {
+            SPTechFX.MODE_STATIC_COLOR: SPTechFX.DICTOF_EFFECTS_STATIC_COLOR,
+            SPTechFX.MODE_STATIC_WHITE: SPTechFX.DICTOF_EFFECTS_STATIC_WHITE,
+            SPTechFX.MODE_DYNAMIC_COLOR: SPTechFX.DICTOF_SPI_EFFECTS_DYNAMIC_COLOR,
+            SPTechFX.MODE_DYNAMIC_WHITE: SPTechFX.DICTOF_SPI_EFFECTS_DYNAMIC_WHITE,
+            SPTechFX.MODE_SOUND_COLOR: SPTechNetModel.DICTOF_SPI_EFFECTS_SOUND_COLOR,
+            SPTechFX.MODE_SOUND_WHITE: SPTechFX.DICTOF_SPI_EFFECTS_SOUND_WHITE,
+            SPTechFX.MODE_CUSTOM_SOLID: SPTechNetModel.DICTOF_SPI_EFFECTS_CUSTOM_SOLID,
+            SPTechFX.MODE_CUSTOM_GRADIENT: SPTechFX.DICTOF_SPI_EFFECTS_CUSTOM_GRADIENT,
+        }
+
+
 ##
 ## BanlanX - SP5xxE Device Proxy
 ##
 class SP5XXE(UniledProxy):
-    """BanlanX - SP5xxE Device Proxy"""
+    """BanlanX - SP5xxE Device Proxy."""
 
     class SP530E(SPTechSig):
+        """SP530E."""
+
         info = "RGB(CW) SPI/PWM (Music) Controller"
         code = {0x4E: "SP530E"}
         conf = {
@@ -122,19 +146,27 @@ class SP5XXE(UniledProxy):
             0x8C: SP5XXE_8C(),  # SPI - RGB + 2 CH PWM
         }
 
+    class SP538E_SP548E(SPTechSig):
+        """SP538E & SP548E."""
+
+        info = "SPI RGB (Music) Controller"
+        code = {0x56: "SP538E", 0x63: "SP548E"}
+        conf = {0x06: SP5XXE_86()}
+
     MODEL_SIGNATURE_LIST: Final = [
         SP530E,
+        SP538E_SP548E,
     ]
 
     def _make_model(self, model: SPTechSig, code: int) -> SPTechNetModel:
-        """Instantiate model class"""
+        """Instantiate model class."""
         assert code in model.code
         return SPTechNetModel(
             code=code, name=model.code[code], info=model.info, configs=model.conf
         )
 
     def match_model_name(self, name: str) -> UniledNetModel | None:
-        """Match a device model name"""
+        """Match a device model name."""
         for signature in self.MODEL_SIGNATURE_LIST:
             for model_code, model_name in signature.code.items():
                 if name != model_name:
@@ -143,7 +175,7 @@ class SP5XXE(UniledProxy):
         return None
 
     def match_model_code(self, code: int) -> UniledNetModel | None:
-        """Match a device model name"""
+        """Match a device model name."""
         for signature in self.MODEL_SIGNATURE_LIST:
             for model_code, model in signature.code.items():
                 if code != model_code:
